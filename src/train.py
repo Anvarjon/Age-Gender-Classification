@@ -20,11 +20,6 @@ def train_model(args):
     model_trainer = ModelTrainer(args.dataset_dir, args.cls_task)
     model_trainer.setTrainingParameters(args.batch_size, args.learning_rate, args.num_epochs)
     model_trainer.startTraining(args.show_summary, args.show_live_plot)
-    
-    # Evaluating the best model on the test dataset
-    best_model_filepath = model_trainer.getBestModelFilepath()
-    model_evaluator = ModelEvaluator(args.dataset_dir, args.cls_task, best_model_filepath)
-    model_evaluator.evaluateBestModel()
 
 if __name__ == '__main__':
     args = parse_args()

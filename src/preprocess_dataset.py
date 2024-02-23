@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument('--dataset_dir', default='data/CommonVoice', help='Dataset directory')
-    parser.add_argument('--dataset_type', default='clear', choices=['raw', 'clear'], help="Dataset type. It can be `raw` or `clean`")
+    parser.add_argument('--dataset_type', default='clean', choices=['raw', 'clean'], help="Dataset type. It can be `raw` or `clean`")
     args = parser.parse_args()
     return args
 
