@@ -100,6 +100,11 @@ python .\src\train.py --dataset_dir='data/CommonVoice' --cls_task='age' --num_ep
 
 You can specify some other training parameters such as `--batch_size`, `--learning_rate`. Default value for `--batch_size` is 128 and for `--learning_rate` is 0.0001. There is also `--show_summary` parameter to show the model summary. Default value for `--show_summary` and `--show_live_plot` is False. After the training is finished, training log files are saved to `results/` folder depending on the classification task, and the best model is saved to `models/` folder. 
 
+Pretrained models 
+--------------------------------
+pretrained models can be downloaded from [here](https://1drv.ms/u/s!AtLl-Rpr0uJohKJ6_236uKDuJsLkhA?e=7zmPvM)
+
+**Note:** pretrained models results are higher than the results given in the paper. Because these models are recently trained with a bit different training parameters.
 
 Model testing
 -------------------------------
