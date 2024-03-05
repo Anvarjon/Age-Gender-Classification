@@ -10,6 +10,8 @@ from seaborn import heatmap
 from keras.callbacks import CSVLogger, ModelCheckpoint
 from keras.optimizers import Adam
 from keras.models import load_model
+from keras.utils import load_img, img_to_array
+import librosa
 import tensorflow as tf
 import logging
 plt.rcParams.update({'font.size': 10})
@@ -130,6 +132,62 @@ class ModelEvaluator:
             f.write(clr)
         
         plot_confusion_matrix(cm, target_names=self.category_names, filename=self.cm_plot_file)
+
+class AgeGenderDetector:
+    def __init__(self, model_path, cls_task):
+        self.cls_task = cls_task
+        self.model = load_model(model_path)
+        self._initializeLabelDecoder()
+        self.sampling_rate = 16000
+        self.n_fft = 256
+        self.num_overlap = 128
+        self._spec_img_size = (64, 64)
+
+    def _initializeLabelDecoder(self):
+        self._decode_gender_age = {0:'female-teens', 1:'female-twenties', 2:'female-thirties', 3:'female-fourties', 4:'female-fifties', 5:'female-sixties',  
+                                6:'male-teens', 7:'male-twenties', 8:'male-thirties', 9:'male-fourties', 10:'male-fifties', 11:'male-sixties'}
+        self._decode_gender = {0:'male', 1:'female'}
+        self._decode_age = {0:'teens', 1:'twenties', 2:'thirties', 3:'fourties', 4:'fifties', 5:'sixties'}
+
+    def scale_minmax(self, X, min=0, max=255):
+        X_std = (X - X.min()) / (X.max() - X.min())
+        X_scaled = X_std * (max - min) + min
+        return X_scaled
+
+    def saveSpectrogram(self, data, fn):
+        plt.axis('off')
+        fig = plt.imshow(data, aspect='auto', origin='lower', interpolation='none')
+        fig.axes.get_xaxis().set_visible(False)
+        fig.axes.get_yaxis().set_visible(False)
+        plt.tight_layout()
+        plt.savefig(fn, bbox_inches='tight', pad_inches=0)
+        plt.close()
+
+    def _extractSpectrogram(self, audio_file):
+        y, sr = librosa.load(audio_file, sr=self.sampling_rate)
+        spec = librosa.stft(y, n_fft=self.n_fft, hop_length=self.num_overlap)
+        spec = librosa.amplitude_to_db(np.abs(spec))
+        # min-max scale to fit inside 8-bit range
+        img = self.scale_minmax(spec).astype(np.uint8)
+        out_file = 'temp.png'
+        self.saveSpectrogram(img, out_file)
+        inp_spec = img_to_array(load_img(out_file, target_size=self._spec_img_size))
+        return inp_spec
+    
+    def getPredictionLabelName(self, encod_lab):
+        if self.cls_task=='age':
+            return self._decode_age.get(encod_lab)
+        elif self.cls_task=='gender':
+            return self._decode_gender.get(encod_lab)
+        elif self.cls_task=='gender_age':
+            return self._decode_gender_age.get(encod_lab)
+
+    def getPrediction(self, audio_file):
+        inp_spec = self._extractSpectrogram(audio_file)
+        inp_spec = np.expand_dims(inp_spec/255.0, axis=0)
+        inp_spec = inp_spec.reshape(-1, 64, 64, 3)
+        prediction = self.model.predict(inp_spec, verbose=0)
+        return self.getPredictionLabelName(int(np.argmax(prediction, axis=1)))
 
 
 class ModelTrainingMonitoring(tf.keras.callbacks.Callback):

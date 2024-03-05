@@ -108,3 +108,11 @@ To test trained model, you can use `src/test.py` python script. The code example
 ```bash
 python .\src\test.py --dataset_dir='data/CommonVoice' --model_path='models/age/best_model_age.h5' --cls_task='age'
 ```
+
+Inference code
+-------------------------------
+To test trained model on a single audio file, you can use `src/inference.py` python script. The code example is given below:
+
+```bash
+python .\src\inference.py --model_path='models/age/best_model_age.h5' --audio_file='data/CommonVoice/Audio/cv-valid-test/sample-000001.mp3' --cls_task='age'
+```
